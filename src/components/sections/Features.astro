@@ -1,0 +1,90 @@
+---
+import SectionHeading from '../SectionHeading.astro';
+import ProductFrame from '../ProductFrame.astro';
+import StepPanels from '../mockups/StepPanels.astro';
+import { features } from '../../content/site';
+
+type Key = 'track' | 'trace' | 'generate' | 'prove';
+---
+
+<section id="features" class="section border-t border-line" aria-labelledby="features-title">
+  <div class="container-x">
+    <SectionHeading id="features-title" label={features.label} title={features.title} body={features.body} />
+
+    <div class="mt-16 grid grid-cols-1 gap-16 lg:mt-20 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-20" data-steps>
+      <ol class="grid gap-16 lg:gap-0">
+        {
+          features.steps.map((s, i) => (
+            <li class="step grid content-center gap-4 lg:min-h-[64vh]" data-step={i}>
+              <span class="font-mono text-[13px] text-faint">0{i + 1} / 04</span>
+              <h3 class="text-[26px] leading-tight font-medium tracking-[-0.025em] text-fg">{s.title}</h3>
+              <p class="max-w-[46ch] text-[16px] text-muted">{s.body}</p>
+              <p class="mono-cmd mt-1 rounded-xl border border-line bg-surface px-4 py-3">
+                <span class="k">{s.cmd[0].split(' ')[0]}</span> {s.cmd[0].split(' ').slice(1).join(' ')}
+                <br />
+                <span class="ok">{s.cmd[1]}</span>
+              </p>
+              <ProductFrame title={s.window} class="mt-4 lg:hidden">
+                <StepPanels step={s.key as Key} />
+              </ProductFrame>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="hidden lg:block" aria-hidden="true">
+        <div class="sticky top-[calc(50vh-260px)]">
+          <div class="relative">
+            {
+              features.steps.map((s, i) => (
+                <ProductFrame title={s.window} class:list={['step-frame', i > 0 && 'absolute inset-x-0 top-0']}>
+                  <StepPanels step={s.key as Key} />
+                </ProductFrame>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (min-width: 1024px) {
+    .step {
+      opacity: 0.4;
+      transition: opacity 0.5s var(--ease-out-soft);
+    }
+    .step[data-active] {
+      opacity: 1;
+    }
+  }
+  /* Desktop: the frames sit on top of each other and cross-fade as each step reaches mid-screen. */
+  .step-frame {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out-soft);
+  }
+  .step-frame[data-active] {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-steps]');
+  if (root) {
+    const steps = [...root.querySelectorAll<HTMLElement>('[data-step]')];
+    const frames = [...root.querySelectorAll<HTMLElement>('.step-frame')];
+    const activate = (i: number) => {
+      steps.forEach((s, k) => s.toggleAttribute('data-active', k === i));
+      frames.forEach((f, k) => f.toggleAttribute('data-active', k === i));
+    };
+    activate(0);
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) activate(Number((e.target as HTMLElement).dataset.step));
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    steps.forEach((s) => io.observe(s));
+  }
+</script>

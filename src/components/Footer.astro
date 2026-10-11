@@ -1,0 +1,47 @@
+---
+import Logo from './Logo.astro';
+import { footer, nav, site } from '../content/site';
+---
+
+<footer class="border-t border-line">
+  <div class="container-x grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr] md:py-20">
+    <div class="grid content-start gap-4">
+      <Logo />
+      <p class="max-w-[28ch] text-[15px] text-muted">{footer.tagline}</p>
+    </div>
+    <div class="grid content-start gap-3">
+      <p class="label">Explore</p>
+      <ul class="grid gap-2 text-[15px]">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="text-muted transition-colors hover:text-fg">
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li><a href="#demo" class="text-muted transition-colors hover:text-fg">Book a demo</a></li>
+      </ul>
+    </div>
+    <div class="grid content-start gap-3">
+      <p class="label">Meet us in 2027</p>
+      <ul class="grid gap-2 text-[15px]">
+        {
+          footer.events.map((e) => (
+            <li class="flex items-baseline justify-between gap-4 text-muted md:justify-start">
+              <span>{e.name}</span>
+              <span class="font-mono text-[12px] text-faint">{e.when}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+  <div class="container-x">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line py-6 font-mono text-[12px] text-faint">
+      <span>© 2026 {site.legalName}</span>
+      <span>{footer.note}</span>
+    </div>
+  </div>
+</footer>

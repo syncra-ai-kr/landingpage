@@ -1,0 +1,17 @@
+---
+interface Props {
+  label: string;
+  title: string;
+  body?: string;
+  id?: string;
+  class?: string;
+}
+const { label, title, body, id, class: className = '' } = Astro.props;
+---
+
+<div class:list={['grid max-w-[720px] gap-5', className]} data-reveal>
+  <p class="label">{label}</p>
+  <h2 id={id} class="h-section">{title}</h2>
+  {body && <p class="lede">{body}</p>}
+  <slot />
+</div>

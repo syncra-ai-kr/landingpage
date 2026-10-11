@@ -1,0 +1,160 @@
+---
+import SectionHeading from '../SectionHeading.astro';
+import ProductFrame from '../ProductFrame.astro';
+import { problem, vision } from '../../content/site';
+
+const chip = { ok: 'chip-ok', bad: 'chip-bad', warn: 'chip-warn' } as const;
+const count = (v: string) => problem.report.rows.filter((r) => r.verdict === v).length;
+---
+
+<section id="problem" class="section" aria-labelledby="problem-title">
+  <div class="container-x grid gap-16">
+    <div class="grid grid-cols-1 items-start gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+      <SectionHeading id="problem-title" label={problem.label} title={problem.title} body={problem.body}>
+        <dl class="hairline-list mt-4 border-y border-line">
+          {
+            problem.causes.map((c) => (
+              <div class="grid grid-cols-[minmax(0,140px)_minmax(0,1fr)] gap-x-5 gap-y-1.5 py-4 sm:grid-cols-[150px_128px_minmax(0,1fr)] sm:items-center">
+                <dt class="text-[15px] text-fg">{c.cause}</dt>
+                <dd class="m-0">
+                  <span class:list={['chip', chip[c.verdict]]}>{c.tag}</span>
+                </dd>
+                <dd class="col-span-2 m-0 text-[14px] text-muted sm:col-span-1">{c.note}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </SectionHeading>
+
+      <div data-reveal style="--reveal-delay: 0.1s">
+        <ProductFrame title={`${problem.report.title} · ${problem.report.scope}`}>
+          <div class="clash-report" data-clash-report data-view="detector">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
+              <p class="text-[13px] text-muted">
+                <span class="when-detector">What your clash detector reports</span>
+                <span class="when-syncra">What Syncra finds behind “resolved”</span>
+              </p>
+              <div class="seg" role="group" aria-label="Choose a view">
+                {
+                  problem.report.views.map((v, i) => (
+                    <button type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-view={i === 0 ? 'detector' : 'syncra'}>
+                      {v}
+                    </button>
+                  ))
+                }
+              </div>
+            </div>
+            <ul class="hairline-list">
+              {
+                problem.report.rows.map((r) => (
+                  <li class="grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3.5 sm:grid-cols-[76px_minmax(0,1fr)_auto]">
+                    <span class="font-mono text-[12px] text-faint">{r.id}</span>
+                    <span class="min-w-0">
+                      <span class="block text-[14px] leading-snug text-fg">{r.pair}</span>
+                      <span class="when-syncra mt-0.5 block font-mono text-[11.5px] text-muted">{r.cause}</span>
+                    </span>
+                    <span>
+                      <span class="when-detector chip chip-neutral">Resolved</span>
+                      <span class:list={['when-syncra chip', chip[r.verdict]]}>{r.tag}</span>
+                    </span>
+                  </li>
+                ))
+              }
+            </ul>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 font-mono text-[12px] text-muted">
+              <span class="when-detector">Resolved {problem.report.rows.length} / {problem.report.rows.length}</span>
+              <span class="when-syncra flex flex-wrap gap-2">
+                <span class="chip chip-ok">Real {count('ok')}</span>
+                <span class="chip chip-bad">False {count('bad')}</span>
+                <span class="chip chip-warn">Still open {count('warn')}</span>
+              </span>
+              <span class="text-faint">Sample data</span>
+            </div>
+          </div>
+        </ProductFrame>
+      </div>
+    </div>
+
+    <dl class="grid grid-cols-1 gap-x-8 gap-y-10 border-t border-line pt-10 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        problem.stats.map((s, i) => (
+          <div class="grid content-start gap-3" data-reveal style={`--reveal-delay: ${i * 0.06}s`}>
+            <dt class="order-2 text-[15px] leading-snug text-muted">{s.text}</dt>
+            <dd class="order-1 m-0 text-[clamp(40px,4.4vw,56px)] leading-none font-medium tracking-[-0.04em] text-fg tabular-nums">
+              {s.value}
+              <span class="ml-0.5 text-[0.5em] text-muted">{s.unit}</span>
+            </dd>
+            <dd class="order-3 m-0 font-mono text-[12px] text-faint">Source: {s.source}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <!-- Vision: where Syncra goes from here -->
+    <div id="vision" class="mt-12 grid gap-14 border-t border-line pt-24 lg:mt-20 lg:pt-32">
+      <SectionHeading id="vision-title" label={vision.label} title={vision.title} body={vision.body} />
+      <ol class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+        {
+          vision.items.map((m, i) => (
+            <li class="grid content-start gap-4" data-reveal style={`--reveal-delay: ${i * 0.06}s`}>
+              <div class="flex items-center gap-3">
+                <span class:list={['size-2.5 shrink-0 rounded-full', m.live ? 'bg-accent shadow-[0_0_0_4px_rgb(14_156_136/0.14)]' : 'border border-faint']} />
+                <span class:list={['h-px flex-1', m.live ? 'bg-accent/40' : 'bg-line']} />
+              </div>
+              <p class="flex items-baseline gap-2 font-mono text-[12px] tracking-[0.04em] uppercase">
+                <span class:list={[m.live ? 'text-accent' : 'text-fg']}>{m.when}</span>
+                <span class="text-faint">· {m.mode}</span>
+              </p>
+              <h3 class="text-[20px] leading-snug font-medium tracking-[-0.02em] text-fg">{m.title}</h3>
+              <p class="text-[14.5px] leading-relaxed text-muted">{m.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background: rgb(255 255 255 / 0.02);
+  }
+  .seg button {
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .seg button:hover {
+    color: var(--color-fg);
+  }
+  .seg button[aria-pressed='true'] {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .clash-report[data-view='detector'] .when-syncra,
+  .clash-report[data-view='syncra'] .when-detector {
+    display: none;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-clash-report]').forEach((report) => {
+    const buttons = report.querySelectorAll<HTMLButtonElement>('button[data-view]');
+    buttons.forEach((b) =>
+      b.addEventListener('click', () => {
+        report.dataset.view = b.dataset.view;
+        buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      }),
+    );
+  });
+</script>

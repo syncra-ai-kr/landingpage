@@ -1,0 +1,110 @@
+---
+import Logo from './Logo.astro';
+import { nav } from '../content/site';
+---
+
+<header class="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-4 md:top-4">
+  <nav
+    aria-label="Primary"
+    class="nav-pill pointer-events-auto relative flex w-full max-w-[1200px] items-center justify-between gap-6 rounded-full py-2 pr-2 pl-5 lg:w-auto lg:gap-10"
+    data-nav
+  >
+    <a href="#top" class="rounded-full text-fg" aria-label="Syncra home"><Logo /></a>
+
+    <ul class="hidden items-center gap-1 lg:flex">
+      {
+        nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="rounded-full px-3 py-2 text-[14px] text-muted transition-colors duration-200 hover:text-fg"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="flex items-center gap-1.5">
+      <a href="#demo" class="btn btn-primary btn-sm">Book a demo</a>
+      <button
+        type="button"
+        class="grid size-9 place-items-center rounded-full text-muted transition-colors hover:text-fg lg:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+        data-menu-toggle
+      >
+        <svg viewBox="0 0 20 20" class="size-5" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M3 7h14M3 13h14" data-icon-open></path>
+          <path d="M5 5l10 10M15 5L5 15" data-icon-close hidden></path>
+        </svg>
+      </button>
+    </div>
+
+    <div
+      id="mobile-menu"
+      class="nav-panel absolute inset-x-0 top-[calc(100%+8px)] hidden rounded-3xl p-2 lg:hidden"
+      data-menu
+    >
+      <ul class="grid">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="block rounded-2xl px-4 py-3 text-[16px] text-fg hover:bg-surface">
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .nav-pill,
+  .nav-panel {
+    background: rgb(255 255 255 / 0.72);
+    border: 1px solid var(--color-line);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    box-shadow:
+      0 1px 2px rgb(10 11 13 / 0.04),
+      0 8px 28px rgb(10 11 13 / 0.07);
+    transition:
+      background-color 0.3s,
+      border-color 0.3s;
+  }
+  .nav-pill[data-scrolled] {
+    background: rgb(255 255 255 / 0.86);
+    border-color: var(--color-line-strong);
+  }
+  .nav-panel[data-open] {
+    display: block;
+  }
+</style>
+
+<script>
+  const navEl = document.querySelector<HTMLElement>('[data-nav]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+
+  const setOpen = (open: boolean) => {
+    if (!toggle || !menu) return;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    menu.toggleAttribute('data-open', open);
+    toggle.querySelector('[data-icon-open]')?.toggleAttribute('hidden', open);
+    toggle.querySelector('[data-icon-close]')?.toggleAttribute('hidden', !open);
+  };
+
+  toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
+
+  const onScroll = () => navEl?.toggleAttribute('data-scrolled', window.scrollY > 24);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>

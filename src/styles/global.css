@@ -1,0 +1,303 @@
+@import "tailwindcss";
+
+/* Light page. Product windows opt into the dark app palette with .theme-dark (see below). */
+@theme {
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f8;
+  --color-surface-2: #eef0f2;
+  --color-line: rgb(10 11 13 / 0.08);
+  --color-line-strong: rgb(10 11 13 / 0.14);
+  --color-fg: #0a0b0d;
+  --color-muted: #5c616b;
+  --color-faint: #8a8f98;
+  --color-accent: #0e9c88;
+  --color-accent-soft: rgb(14 156 136 / 0.08);
+  --color-danger: #d93a40;
+  --color-warn: #b7791f;
+
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --chip-neutral-bg: rgb(10 11 13 / 0.05);
+    --chip-ok-bg: rgb(14 156 136 / 0.1);
+    --chip-ok-fg: #0b7d6d;
+    --chip-bad-bg: rgb(217 58 64 / 0.09);
+    --chip-bad-fg: #c4262c;
+    --chip-warn-bg: rgb(183 121 31 / 0.12);
+    --chip-warn-fg: #8a5a12;
+  }
+  /* The product's own dark UI, used inside window frames on the white page. */
+  .theme-dark {
+    color-scheme: dark;
+    --color-bg: #0a0b0d;
+    --color-surface: #111316;
+    --color-surface-2: #16191d;
+    --color-line: rgb(255 255 255 / 0.08);
+    --color-line-strong: rgb(255 255 255 / 0.14);
+    --color-fg: #edeef0;
+    --color-muted: #8a8f98;
+    --color-faint: #5c616b;
+    --color-accent: #2ec4ae;
+    --color-accent-soft: rgb(46 196 174 / 0.12);
+    --color-danger: #f2555a;
+    --color-warn: #e9b44c;
+    --chip-neutral-bg: rgb(255 255 255 / 0.06);
+    --chip-ok-bg: rgb(46 196 174 / 0.12);
+    --chip-ok-fg: #5fe0cb;
+    --chip-bad-bg: rgb(242 85 90 / 0.12);
+    --chip-bad-fg: #ff8a8e;
+    --chip-warn-bg: rgb(233 180 76 / 0.12);
+    --chip-warn-fg: #f2c96f;
+    color: var(--color-fg);
+  }
+  html {
+    background: var(--color-bg);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: rgb(14 156 136 / 0.2);
+  }
+  [id] {
+    scroll-margin-top: 96px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  .container-x {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: 32px;
+    }
+  }
+
+  .section {
+    padding-block: clamp(96px, 12vw, 160px);
+  }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .h-display {
+    font-size: clamp(44px, 6.4vw, 84px);
+    line-height: 1.02;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+  }
+  .h-section {
+    font-size: clamp(34px, 4.2vw, 52px);
+    line-height: 1.08;
+    font-weight: 500;
+    letter-spacing: -0.032em;
+  }
+  .lede {
+    font-size: clamp(17px, 1.3vw, 19px);
+    line-height: 1.6;
+    color: var(--color-muted);
+    max-width: 60ch;
+  }
+
+  /* Pill buttons (oddity1-style) */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    transition:
+      background-color 0.25s var(--ease-out-soft),
+      color 0.25s var(--ease-out-soft),
+      border-color 0.25s var(--ease-out-soft),
+      transform 0.25s var(--ease-out-soft);
+  }
+  .btn-primary {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .btn-primary:hover {
+    background: color-mix(in oklab, var(--color-fg) 82%, var(--color-bg));
+  }
+  .btn-ghost {
+    border: 1px solid var(--color-line-strong);
+    color: var(--color-fg);
+  }
+  .btn-ghost:hover {
+    border-color: color-mix(in oklab, var(--color-fg) 30%, transparent);
+    background: color-mix(in oklab, var(--color-fg) 4%, transparent);
+  }
+  .btn-sm {
+    min-height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+  .btn .arrow {
+    transition: transform 0.25s var(--ease-out-soft);
+  }
+  .btn:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  /* Window-chrome product frame (dark app window) with soft layered shadow + faint teal under-glow */
+  .frame {
+    position: relative;
+    border-radius: 18px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    overflow: hidden;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.05),
+      0 2px 4px rgb(10 11 13 / 0.06),
+      0 12px 32px rgb(10 11 13 / 0.1),
+      0 40px 90px rgb(10 11 13 / 0.14),
+      0 60px 140px -60px rgb(14 156 136 / 0.35);
+  }
+  .frame-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 40px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--color-line);
+    background: rgb(255 255 255 / 0.02);
+  }
+  .frame-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .frame-dots i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.12);
+  }
+  .frame-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Status chips (colours follow the light page or the dark app window they sit in) */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .chip-neutral {
+    background: var(--chip-neutral-bg);
+    color: var(--color-muted);
+  }
+  .chip-ok {
+    background: var(--chip-ok-bg);
+    color: var(--chip-ok-fg);
+  }
+  .chip-bad {
+    background: var(--chip-bad-bg);
+    color: var(--chip-bad-fg);
+  }
+  .chip-warn {
+    background: var(--chip-warn-bg);
+    color: var(--chip-warn-fg);
+  }
+
+  .hairline-list > * + * {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .mono-cmd {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--color-muted);
+  }
+  .mono-cmd .k {
+    color: var(--chip-warn-fg);
+  }
+  .mono-cmd .ok {
+    color: var(--chip-ok-fg);
+  }
+}
+
+/* Scroll reveal: only hide content once JS has confirmed it can reveal it again. */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.9s var(--ease-out-soft),
+    transform 0.9s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0s);
+}
+html.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,177 @@
+---
+import { demo, site } from '../../content/site';
+---
+
+<section id="demo" class="section pt-0" aria-labelledby="demo-title">
+  <div class="container-x">
+    <!-- oddity1-style framed panel: a teal outer frame around a dark inner panel -->
+    <div class="demo-frame rounded-[28px] p-2.5 sm:p-3.5" data-reveal>
+      <div class="grid grid-cols-1 gap-12 rounded-[20px] bg-bg p-7 sm:p-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16 lg:p-14">
+        <div class="grid content-start gap-5">
+          <p class="label">{demo.label}</p>
+          <h2 id="demo-title" class="h-section">{demo.title}</h2>
+          <p class="lede">{demo.body}</p>
+          <ol class="mt-4 grid gap-3 text-[15px] text-muted">
+            <li class="flex gap-3"><span class="font-mono text-[12px] leading-6 text-accent">01</span>Tell us about your site and revisions.</li>
+            <li class="flex gap-3"><span class="font-mono text-[12px] leading-6 text-accent">02</span>Share one clash report and two IFC models.</li>
+            <li class="flex gap-3"><span class="font-mono text-[12px] leading-6 text-accent">03</span>Get a report of real and false resolutions.</li>
+          </ol>
+        </div>
+
+        <form class="grid gap-5" data-demo-form data-endpoint={site.formEndpoint} novalidate>
+          <fieldset class="grid gap-2.5">
+            <legend class="mb-2.5 text-[14px] text-fg">I’m interested in</legend>
+            <div class="flex flex-wrap gap-2">
+              {
+                demo.interests.map((it, i) => (
+                  <label class="choice">
+                    <input type="radio" name="interest" id={`interest-${it.value}`} value={it.value} checked={i === 0} class="sr-only" />
+                    <span>{it.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <label class="field" for="demo-name">
+              <span>Name</span>
+              <input id="demo-name" name="name" type="text" autocomplete="name" required />
+            </label>
+            <label class="field" for="demo-email">
+              <span>Work email</span>
+              <input id="demo-email" name="email" type="email" autocomplete="email" required />
+            </label>
+            <label class="field" for="demo-company">
+              <span>Company</span>
+              <input id="demo-company" name="company" type="text" autocomplete="organization" required />
+            </label>
+            <label class="field" for="demo-site">
+              <span>Site type</span>
+              <select id="demo-site" name="site">
+                {demo.siteTypes.map((t) => <option>{t}</option>)}
+              </select>
+            </label>
+          </div>
+          <label class="field" for="demo-message">
+            <span>What are you working on? <span class="text-faint">(optional)</span></span>
+            <textarea id="demo-message" name="message" rows="4" placeholder="Project phase, how often designs change, tools you use"></textarea>
+          </label>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <button type="submit" class="btn btn-primary">Book a demo</button>
+            <p class="text-[13px] text-faint" data-form-status role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo-frame {
+    background: linear-gradient(160deg, #35d3bc, #1d8f80 55%, #146b61);
+    box-shadow:
+      0 40px 120px -40px rgb(46 196 174 / 0.5),
+      0 10px 30px -15px rgb(46 196 174 / 0.4);
+  }
+  .field {
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-fg);
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: 15px;
+    padding: 12px 14px;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 110px;
+  }
+  .field ::placeholder {
+    color: var(--color-faint);
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: rgb(46 196 174 / 0.6);
+    box-shadow: 0 0 0 3px rgb(46 196 174 / 0.15);
+  }
+  .field input[aria-invalid='true'] {
+    border-color: rgb(242 85 90 / 0.7);
+  }
+  .choice span {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-line-strong);
+    font-size: 13.5px;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s,
+      background-color 0.2s;
+  }
+  .choice:hover span {
+    color: var(--color-fg);
+  }
+  .choice input:checked + span {
+    color: var(--color-bg);
+    background: var(--color-fg);
+    border-color: var(--color-fg);
+  }
+  .choice input:focus-visible + span {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-demo-form]');
+  const status = form?.querySelector<HTMLElement>('[data-form-status]');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const required = [...form.querySelectorAll<HTMLInputElement>('input[required]')];
+    let firstInvalid: HTMLInputElement | null = null;
+    for (const input of required) {
+      const ok = input.checkValidity() && input.value.trim() !== '';
+      input.setAttribute('aria-invalid', String(!ok));
+      if (!ok && !firstInvalid) firstInvalid = input;
+    }
+    if (firstInvalid) {
+      if (status) status.textContent = 'Please fill in your name, a valid work email and your company.';
+      firstInvalid.focus();
+      return;
+    }
+    const endpoint = form.dataset.endpoint;
+    if (!endpoint) {
+      // TODO: set site.formEndpoint (Formspree or a Vercel function) before launch.
+      if (status) status.textContent = 'Form delivery isn’t connected yet, so this request was not sent.';
+      return;
+    }
+    if (status) status.textContent = 'Sending…';
+    try {
+      const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      if (status) status.textContent = 'Thanks. We’ll be in touch soon.';
+    } catch {
+      if (status) status.textContent = 'Something went wrong sending the form. Please try again.';
+    }
+  });
+</script>
