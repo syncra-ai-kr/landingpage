@@ -2,7 +2,7 @@
 // Window-chrome frame for product mockups (traffic-light dots + mono title).
 // Uses the product's own dark UI palette, so it reads as an app window on the white page.
 interface Props {
-  title: string;
+  title?: string;
   class?: string;
 }
 const { title, class: className = '' } = Astro.props;
@@ -11,7 +11,7 @@ const { title, class: className = '' } = Astro.props;
 <div class:list={['frame theme-dark', className]}>
   <div class="frame-bar">
     <span class="frame-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="frame-title">{title}</span>
+    {title && <span class="frame-title">{title}</span>}
     <slot name="bar" />
   </div>
   <slot />

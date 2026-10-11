@@ -39,7 +39,7 @@ export interface Theme {
 const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
 /** Polyline with rounded (filleted) corners, for pipes that bend like real pipes. */
-function filletPath(pts: THREE.Vector3[], r: number) {
+export function filletPath(pts: THREE.Vector3[], r: number) {
   const path = new THREE.CurvePath<THREE.Vector3>();
   let start = pts[0].clone();
   for (let i = 1; i < pts.length - 1; i++) {

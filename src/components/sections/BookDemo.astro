@@ -1,10 +1,11 @@
 ---
 import { demo, site } from '../../content/site';
+import { countries } from '../../content/countries';
 ---
 
 <section id="demo" class="section pt-0" aria-labelledby="demo-title">
   <div class="container-x">
-    <!-- oddity1-style framed panel: a teal outer frame around a dark inner panel -->
+    <!-- oddity1-style framed panel: a teal outer frame around the inner panel -->
     <div class="demo-frame rounded-[28px] p-2.5 sm:p-3.5" data-reveal>
       <div class="grid grid-cols-1 gap-12 rounded-[20px] bg-bg p-7 sm:p-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16 lg:p-14">
         <div class="grid content-start gap-5">
@@ -19,42 +20,52 @@ import { demo, site } from '../../content/site';
         </div>
 
         <form class="grid gap-5" data-demo-form data-endpoint={site.formEndpoint} novalidate>
-          <fieldset class="grid gap-2.5">
-            <legend class="mb-2.5 text-[14px] text-fg">I’m interested in</legend>
-            <div class="flex flex-wrap gap-2">
-              {
-                demo.interests.map((it, i) => (
-                  <label class="choice">
-                    <input type="radio" name="interest" id={`interest-${it.value}`} value={it.value} checked={i === 0} class="sr-only" />
-                    <span>{it.label}</span>
-                  </label>
-                ))
-              }
-            </div>
-          </fieldset>
-
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <label class="field" for="demo-name">
-              <span>Name</span>
-              <input id="demo-name" name="name" type="text" autocomplete="name" required />
+            <label class="field" for="demo-first-name">
+              <span>First name <span class="req" aria-hidden="true">*</span></span>
+              <input id="demo-first-name" name="firstName" type="text" autocomplete="given-name" required />
+            </label>
+            <label class="field" for="demo-last-name">
+              <span>Last name <span class="req" aria-hidden="true">*</span></span>
+              <input id="demo-last-name" name="lastName" type="text" autocomplete="family-name" required />
             </label>
             <label class="field" for="demo-email">
-              <span>Work email</span>
+              <span>Work email <span class="req" aria-hidden="true">*</span></span>
               <input id="demo-email" name="email" type="email" autocomplete="email" required />
             </label>
             <label class="field" for="demo-company">
-              <span>Company</span>
+              <span>Company <span class="req" aria-hidden="true">*</span></span>
               <input id="demo-company" name="company" type="text" autocomplete="organization" required />
             </label>
-            <label class="field" for="demo-site">
-              <span>Site type</span>
-              <select id="demo-site" name="site">
-                {demo.siteTypes.map((t) => <option>{t}</option>)}
+            <div class="field">
+              <label for="demo-role">Role <span class="req" aria-hidden="true">*</span></label>
+              <select id="demo-role" name="role" required data-role-select>
+                <option value="" disabled selected>Select your role</option>
+                {demo.roles.map((r) => <option>{r}</option>)}
+              </select>
+              <input
+                id="demo-role-other"
+                name="roleOther"
+                type="text"
+                aria-label="Your role"
+                placeholder="Your role"
+                autocomplete="organization-title"
+                required
+                disabled
+                hidden
+                data-role-other
+              />
+            </div>
+            <label class="field" for="demo-country">
+              <span>Country <span class="req" aria-hidden="true">*</span></span>
+              <select id="demo-country" name="country" autocomplete="country" required>
+                <option value="" disabled selected>Select your country</option>
+                {countries.map((c) => <option value={c.code}>{c.name}</option>)}
               </select>
             </label>
           </div>
           <label class="field" for="demo-message">
-            <span>What are you working on? <span class="text-faint">(optional)</span></span>
+            <span>What are you working on?</span>
             <textarea id="demo-message" name="message" rows="4" placeholder="Project phase, how often designs change, tools you use"></textarea>
           </label>
 
@@ -77,6 +88,7 @@ import { demo, site } from '../../content/site';
   }
   .field {
     display: grid;
+    align-content: start;
     gap: 8px;
     font-size: 14px;
     color: var(--color-fg);
@@ -95,6 +107,17 @@ import { demo, site } from '../../content/site';
       border-color 0.2s,
       box-shadow 0.2s;
   }
+  .field input,
+  .field select {
+    height: 50px;
+  }
+  .field select {
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%235c616b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
   .field textarea {
     resize: vertical;
     min-height: 110px;
@@ -109,52 +132,53 @@ import { demo, site } from '../../content/site';
     border-color: rgb(46 196 174 / 0.6);
     box-shadow: 0 0 0 3px rgb(46 196 174 / 0.15);
   }
-  .field input[aria-invalid='true'] {
-    border-color: rgb(242 85 90 / 0.7);
+  /* Placeholder option ("Select your …") reads as a hint until a value is picked. */
+  .field select:invalid {
+    color: var(--color-faint);
   }
-  .choice span {
-    display: inline-flex;
-    align-items: center;
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 999px;
-    border: 1px solid var(--color-line-strong);
-    font-size: 13.5px;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition:
-      color 0.2s,
-      border-color 0.2s,
-      background-color 0.2s;
-  }
-  .choice:hover span {
+  .field option {
     color: var(--color-fg);
   }
-  .choice input:checked + span {
-    color: var(--color-bg);
-    background: var(--color-fg);
-    border-color: var(--color-fg);
+  .field [aria-invalid='true'] {
+    border-color: color-mix(in srgb, var(--color-danger) 70%, transparent);
   }
-  .choice input:focus-visible + span {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 3px;
+  .req {
+    color: var(--color-danger);
   }
 </style>
 
 <script>
   const form = document.querySelector<HTMLFormElement>('[data-demo-form]');
   const status = form?.querySelector<HTMLElement>('[data-form-status]');
+  const roleSelect = form?.querySelector<HTMLSelectElement>('[data-role-select]');
+  const roleOther = form?.querySelector<HTMLInputElement>('[data-role-other]');
+
+  // "Other" swaps in a free-text role field; it is disabled (so not validated or sent) otherwise.
+  const syncRole = () => {
+    if (!roleSelect || !roleOther) return;
+    const other = roleSelect.value === 'Other';
+    roleOther.hidden = !other;
+    roleOther.disabled = !other;
+    return other;
+  };
+  roleSelect?.addEventListener('change', () => syncRole() && roleOther?.focus());
+  form?.addEventListener('input', (e) => (e.target as HTMLElement).removeAttribute('aria-invalid'));
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const required = [...form.querySelectorAll<HTMLInputElement>('input[required]')];
-    let firstInvalid: HTMLInputElement | null = null;
-    for (const input of required) {
-      const ok = input.checkValidity() && input.value.trim() !== '';
-      input.setAttribute('aria-invalid', String(!ok));
-      if (!ok && !firstInvalid) firstInvalid = input;
+    const required = [...form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input[required], select[required]')].filter(
+      (el) => !el.disabled,
+    );
+    let firstInvalid: HTMLInputElement | HTMLSelectElement | null = null;
+    for (const field of required) {
+      const ok = field.checkValidity() && field.value.trim() !== '';
+      if (ok) field.removeAttribute('aria-invalid');
+      else field.setAttribute('aria-invalid', 'true');
+      if (!ok && !firstInvalid) firstInvalid = field;
     }
     if (firstInvalid) {
-      if (status) status.textContent = 'Please fill in your name, a valid work email and your company.';
+      const badEmail = firstInvalid.type === 'email' && firstInvalid.value.trim() !== '';
+      if (status) status.textContent = badEmail ? 'Please enter a valid work email.' : 'Please fill in all fields marked *.';
       firstInvalid.focus();
       return;
     }
@@ -169,6 +193,7 @@ import { demo, site } from '../../content/site';
       const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
       if (!res.ok) throw new Error(String(res.status));
       form.reset();
+      syncRole();
       if (status) status.textContent = 'Thanks. We’ll be in touch soon.';
     } catch {
       if (status) status.textContent = 'Something went wrong sending the form. Please try again.';

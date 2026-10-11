@@ -66,29 +66,60 @@ export const features = {
       key: 'track',
       title: 'Track every object across revisions',
       body: 'Syncra pairs objects between revisions by IFC GlobalId and re-identification, then classifies why each clash disappeared: a design fix, a deletion, a reissued ID or a reclassification.',
-      cmd: ['diff rev-A → rev-B · GlobalId + geometry + ports', 'changed 2 · added 0 · deleted 0'],
-      window: 'Change summary · Rev A → Rev B',
+      cmd: ['diff rev-A → rev-B · GlobalId + geometry + ports', 'changed 2 · new clashes 2'],
+      window: 'Clash detection · Rev A → Rev B',
+      status: 'Detecting clashes',
     },
     {
       key: 'trace',
       title: 'Trace the ripple across trades',
       body: 'Starting from the change, Syncra follows port connections and spatial proximity to find knock-on issues in mechanical, electrical and plumbing. Where connectivity breaks between trades, a graph neural network estimates how the impact spreads.',
-      cmd: ['propagate seeds=AHU-1 hops=2 radius=3 m', 'new issues 2 · disconnected 1 · clash 1'],
-      window: 'Impact trace · CR-014',
+      cmd: ['propagate seed=clash-1 hops=2 radius=3 m', 'affected 7 · trades 4'],
+      window: 'Impact analysis · Clash 1',
+      status: 'Analyzing impact',
     },
     {
       key: 'generate',
       title: 'Generate fixes that pass the rules',
       body: 'A diffusion-based generator proposes several routes that respect connectivity and design conditions. Each one is re-checked against clearance, clash, connection and pressure-loss rules in a closed loop, and only passing options survive.',
-      cmd: ['plan orthogonal · clearance 75 mm', 'generated 49 · rejected 32 · passing 17'],
-      window: 'P-101 reconnection · rule check',
+      cmd: ['plan orthogonal · clearance 75 mm', 'generated 8 · rejected 5 · passing 3'],
+      window: 'P-101 reroute · rule check',
+      status: 'Verifying alternatives',
     },
     {
       key: 'prove',
       title: 'Patch the model and prove it',
       body: 'The chosen option is written back as an IFC patch and re-verified by the same engine. Options are compared by scope and quantities, and an engineer makes the final call.',
-      cmd: ['what-if 9 variants · each written to IFC', 'tray +200 mm: clear · new issues 0'],
-      window: 'AHU-1 ↔ T-301 · alternatives',
+      cmd: ['what-if A · B · C · each written to IFC', 're-verified · new clashes 0'],
+      window: 'P-101 reroute · verified options',
+      status: '3 options verified',
+    },
+  ],
+  // The three reroutes that pass verification (Features step 4). Figures match the 3D model.
+  options: [
+    {
+      key: 'A',
+      name: 'Over the duct',
+      summary: 'A local jog up and over D-201.',
+      metrics: ['+0.8 m', '4 elbows', '+0.3 kPa'],
+      pros: ['Smallest change: one short jog', 'Ceiling height unchanged'],
+      cons: ['High point needs an air vent', 'Only 75 mm above the duct'],
+    },
+    {
+      key: 'B',
+      name: 'Under the duct',
+      summary: 'A local dip under D-201.',
+      metrics: ['+0.8 m', '4 elbows', '+0.3 kPa'],
+      pros: ['Easy to reach for maintenance', 'Clear of P-102 and beam B-2'],
+      cons: ['Low point needs a drain valve', 'Ceiling 410 mm lower at the dip'],
+    },
+    {
+      key: 'C',
+      name: 'Lower the whole run',
+      summary: 'Run P-101 under D-201 from the riser.',
+      metrics: ['+0.4 m', '2 elbows', '+0.1 kPa'],
+      pros: ['Fewest fittings, lowest pressure loss', 'No high or low points'],
+      cons: ['4.75 m of pipe re-hung', 'Lower ceiling along the corridor'],
     },
   ],
 };
@@ -109,12 +140,8 @@ export const demo = {
   label: 'Book a demo',
   title: 'See it on your own revisions.',
   body: 'One recent revision is enough. Send a clash report with the before-and-after IFC models, and we’ll come back with a report that separates real fixes from false ones.',
-  interests: [
-    { value: 'diagnostic', label: 'Free False Resolved diagnostic' },
-    { value: 'pilot', label: 'Site pilot' },
-    { value: 'enterprise', label: 'Company-wide rollout' },
-  ],
-  siteTypes: ['Industrial plant', 'Semiconductor fab', 'Data center', 'Other'],
+  // 'Other' reveals a free-text field in the form.
+  roles: ['CEO', 'MEP Engineer', 'Software Engineer', 'Other'],
 };
 
 export const footer = {

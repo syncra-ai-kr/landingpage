@@ -1,10 +1,7 @@
 ---
 import SectionHeading from '../SectionHeading.astro';
-import ProductFrame from '../ProductFrame.astro';
-import StepPanels from '../mockups/StepPanels.astro';
+import FeatureWindow from '../mockups/FeatureWindow.astro';
 import { features } from '../../content/site';
-
-type Key = 'track' | 'trace' | 'generate' | 'prove';
 ---
 
 <section id="features" class="section border-t border-line" aria-labelledby="features-title">
@@ -24,25 +21,16 @@ type Key = 'track' | 'trace' | 'generate' | 'prove';
                 <br />
                 <span class="ok">{s.cmd[1]}</span>
               </p>
-              <ProductFrame title={s.window} class="mt-4 lg:hidden">
-                <StepPanels step={s.key as Key} />
-              </ProductFrame>
+              <FeatureWindow stage={i as 0 | 1 | 2 | 3} mode="inview" class="mt-4 lg:hidden" />
             </li>
           ))
         }
       </ol>
 
-      <div class="hidden lg:block" aria-hidden="true">
-        <div class="sticky top-[calc(50vh-260px)]">
-          <div class="relative">
-            {
-              features.steps.map((s, i) => (
-                <ProductFrame title={s.window} class:list={['step-frame', i > 0 && 'absolute inset-x-0 top-0']}>
-                  <StepPanels step={s.key as Key} />
-                </ProductFrame>
-              ))
-            }
-          </div>
+      <!-- Desktop: one sticky window that moves through the four stages as each step reaches mid-screen. -->
+      <div class="hidden lg:block">
+        <div class="sticky top-[max(80px,calc(50vh-330px))]">
+          <FeatureWindow stage={0} mode="scroll" />
         </div>
       </div>
     </div>
@@ -59,26 +47,22 @@ type Key = 'track' | 'trace' | 'generate' | 'prove';
       opacity: 1;
     }
   }
-  /* Desktop: the frames sit on top of each other and cross-fade as each step reaches mid-screen. */
-  .step-frame {
-    opacity: 0;
-    transition: opacity 0.6s var(--ease-out-soft);
-  }
-  .step-frame[data-active] {
-    opacity: 1;
-  }
 </style>
 
 <script>
+  import { setStage } from '../../scripts/feature-window';
+
   const root = document.querySelector<HTMLElement>('[data-steps]');
+  const fw = root?.querySelector<HTMLElement>('[data-fw][data-mode="scroll"]');
   if (root) {
     const steps = [...root.querySelectorAll<HTMLElement>('[data-step]')];
-    const frames = [...root.querySelectorAll<HTMLElement>('.step-frame')];
     const activate = (i: number) => {
       steps.forEach((s, k) => s.toggleAttribute('data-active', k === i));
-      frames.forEach((f, k) => f.toggleAttribute('data-active', k === i));
+      if (fw) setStage(fw, i);
     };
-    activate(0);
+    steps[0]?.toggleAttribute('data-active', true);
+    // Hold the window in its "before" state (AHU-1 not moved yet) until the first step is reached.
+    if (fw && !matchMedia('(prefers-reduced-motion: reduce)').matches) setStage(fw, -1);
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) if (e.isIntersecting) activate(Number((e.target as HTMLElement).dataset.step));

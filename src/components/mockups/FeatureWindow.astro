@@ -1,0 +1,413 @@
+---
+// The Features product window: a 3D view of the MEP model plus the matching data view.
+// One window moves through four stages (detect → impact → alternatives → options); see src/scripts/feature-window.ts.
+// On desktop a single sticky window follows the steps (mode "scroll"); on phones each step gets its own
+// window that plays into its stage when scrolled into view (mode "inview"). The 3D canvas is shared between them.
+import ProductFrame from '../ProductFrame.astro';
+import { features } from '../../content/site';
+
+interface Props {
+  stage: 0 | 1 | 2 | 3;
+  mode: 'scroll' | 'inview';
+  class?: string;
+}
+const { stage, mode, class: className = '' } = Astro.props;
+
+/** data-on list plus the server-rendered active state for this window's stage. */
+const on = (list: string) => ({ 'data-on': list, 'data-active': list.split(' ').includes(String(stage)) ? '' : undefined });
+
+const titles = features.steps.map((s) => s.window);
+const statuses = features.steps.map((s) => s.status);
+const stageLists = ['-1 0', '1', '2', '3'];
+const trades = [
+  { color: '#9fd0e8', name: 'Mechanical', items: 'D-201 supply duct · D-202 branch', n: 2 },
+  { color: '#7aa5ff', name: 'Plumbing', items: 'P-101 · riser R-CHW · P-102', n: 3 },
+  { color: '#f0c060', name: 'Electrical', items: 'Conduit C-1, 1.3 m below', n: 1 },
+  { color: '#c9ced5', name: 'Structure', items: 'Beam B-2 limits routes over', n: 1 },
+];
+const rejected = [
+  ['D', 'Still runs through duct D-201'],
+  ['E', 'Hits conduit C-1'],
+  ['F', 'Below the 2.4 m headroom line'],
+  ['G', '6 elbows, over the fitting limit'],
+  ['H', '20 mm from P-102 (75 mm needed)'],
+];
+---
+
+<div class:list={['fw', className]} data-fw data-mode={mode} data-target={stage} data-stage={stage} data-option="0">
+  <ProductFrame>
+    <div slot="bar" class="bar-stack min-w-0 flex-1" aria-hidden="true">
+      {titles.map((t, i) => <span class="frame-title fade" {...on(stageLists[i])}>{t}</span>)}
+    </div>
+    <div slot="bar" class="bar-stack justify-items-end" aria-hidden="true">
+      {
+        statuses.map((s, i) => (
+          <span class:list={['status fade', ['is-bad', 'is-warn', 'is-ok', 'is-done'][i]]} {...on(stageLists[i])}>
+            <i />
+            {s}
+          </span>
+        ))
+      }
+    </div>
+
+    <div class="viewport" data-fw-viewport aria-hidden="true">
+      <img data-fw-still alt="" hidden />
+    </div>
+
+    <div class="views p-5 text-[13.5px]">
+      <!-- 1 · two clashes detected -->
+      <div class="view grid content-start gap-4" {...on('-1 0')}>
+        <div class="st flex items-start justify-between gap-3" style="--i:0">
+          <div>
+            <p class="font-medium text-fg">Clash check · Rev B</p>
+            <p class="mt-1 font-mono text-[12px] text-muted">IFC4 · design change CR-014</p>
+          </div>
+          <span class="chip chip-bad fade" {...on('0')} style="--in:1.6s">2 new clashes</span>
+        </div>
+        <dl class="grid grid-cols-3 gap-2 text-center" {...on('0')}>
+          {
+            [
+              ['Objects compared', 12480],
+              ['Changed', 2],
+              ['New clashes', 2],
+            ].map(([k, v], i) => (
+              <div class="st grid gap-0.5 rounded-lg border border-line px-2 py-2.5" style={`--i:${i + 1}`}>
+                <dt class="order-2 truncate text-[11.5px] text-muted">{k}</dt>
+                <dd class="order-1 m-0 font-mono text-[18px] text-fg tabular-nums" data-count={v}>
+                  {Number(v).toLocaleString('en-US')}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <ul class="hairline-list -my-1">
+          {
+            [
+              ['Clash 1', 'P-101 chilled water ↔ D-201 duct', 'hard · 140 mm', '1s'],
+              ['Clash 2', 'AHU-1 ↔ T-301 cable tray', 'hard · 180 mm', '1.7s'],
+            ].map(([k, v, m, d]) => (
+              <li class="fade grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-3 py-2" {...on('0')} style={`--in:${d}`}>
+                <span class="chip chip-bad w-fit">{k}</span>
+                <span class="truncate text-fg">{v}</span>
+                <span class="font-mono text-[11.5px] text-faint">{m}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- 2 · impact of clash 1, by trade -->
+      <div class="view grid content-start gap-3" {...on('1')}>
+        <div class="st flex items-start justify-between gap-3" style="--i:0">
+          <div>
+            <p class="font-medium text-fg">Clash 1 · P-101 ↔ D-201</p>
+            <p class="mt-1 font-mono text-[12px] text-muted">ports + proximity · 2 hops · 3 m</p>
+          </div>
+          <span class="chip chip-neutral">7 affected · 4 trades</span>
+        </div>
+        <ul class="hairline-list -my-1">
+          {
+            trades.map((t, i) => (
+              <li class="st grid grid-cols-[96px_minmax(0,1fr)_auto] items-center gap-3 py-2" style={`--i:${i + 1}`}>
+                <span class="flex items-center gap-2 text-fg">
+                  <i class="size-2 rounded-full" style={`background:${t.color}`} />
+                  {t.name}
+                </span>
+                <span class="truncate text-muted">{t.items}</span>
+                <span class="font-mono text-[12px] text-fg tabular-nums">{t.n}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- 3 · eight alternatives, five rejected -->
+      <div class="view grid content-start gap-4" {...on('2')}>
+        <div class="st flex flex-wrap items-center gap-2 font-mono text-[12px]" style="--i:0">
+          <span class="chip chip-neutral">Generated <span class="tabular-nums" data-count="8">8</span></span>
+          <span class="chip chip-bad">Rejected <span class="tabular-nums" data-count="5">5</span></span>
+          <span class="chip chip-ok">Passing <span class="tabular-nums" data-count="3">3</span></span>
+        </div>
+        <ul class="grid gap-1.5 font-mono text-[12px] text-muted">
+          {
+            rejected.map(([k, why], i) => (
+              <li class="st flex gap-2" style={`--i:${i + 1}`}>
+                <span class="text-danger">✕</span>
+                <span class="text-fg">{k}</span>
+                <span>{why}</span>
+              </li>
+            ))
+          }
+          <li class="st flex gap-2 text-accent" style="--i:6"><span>✓</span><span>A · B · C</span><span>clear every clash, clearance and headroom rule</span></li>
+        </ul>
+      </div>
+
+      <!-- 4 · three verified options to choose from -->
+      <div class="view grid content-start gap-4" {...on('3')}>
+        <div class="st grid grid-cols-3 gap-2" role="group" aria-label="Verified options" style="--i:0">
+          {
+            features.options.map((o, k) => (
+              <button type="button" class="opt" data-option={k} aria-pressed={k === 0 ? 'true' : 'false'}>
+                <span class="font-mono text-[11px] text-accent">Option {o.key}</span>
+                <span class="text-[13px] leading-snug text-fg">{o.name}</span>
+              </button>
+            ))
+          }
+        </div>
+        {
+          features.options.map((o, k) => (
+            <div class="st pane grid gap-3" data-pane={k} hidden={k !== 0} style="--i:1">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-fg">{o.summary}</p>
+                <span class="chip chip-ok">Re-verified · 0 clashes</span>
+              </div>
+              <p class="font-mono text-[12px] text-muted">{o.metrics.join(' · ')}</p>
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <ul class="grid content-start gap-1">
+                  {o.pros.map((p) => (
+                    <li class="flex gap-2 text-fg">
+                      <span class="font-mono text-accent">+</span>
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+                <ul class="grid content-start gap-1">
+                  {o.cons.map((c) => (
+                    <li class="flex gap-2 text-muted">
+                      <span class="font-mono text-warn">−</span>
+                      {c}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </ProductFrame>
+</div>
+
+<style>
+  /* ---- stage plumbing: [data-on] elements switch on with data-active ---- */
+  .fade {
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out-soft);
+  }
+  .fade[data-active] {
+    opacity: 1;
+    transition-delay: var(--in, 0s);
+  }
+  .bar-stack {
+    display: grid;
+  }
+  .bar-stack > * {
+    grid-area: 1 / 1;
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 22px;
+    padding: 0 9px;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    white-space: nowrap;
+    color: var(--color-muted);
+  }
+  .status i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--dot);
+  }
+  .status.is-bad {
+    --dot: var(--color-danger);
+  }
+  .status.is-warn {
+    --dot: var(--color-warn);
+  }
+  .status.is-ok,
+  .status.is-done {
+    --dot: var(--color-accent);
+  }
+  .status.is-done {
+    color: var(--chip-ok-fg);
+    border-color: rgb(46 196 174 / 0.3);
+  }
+
+  /* ---- 3D viewport (grid placeholder until the canvas arrives) ---- */
+  .viewport {
+    position: relative;
+    container-type: inline-size;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-line);
+    background:
+      linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--color-bg);
+  }
+  .viewport img,
+  .viewport :global(.fw-canvas) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .viewport :global(.fw-tags) {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .viewport :global(.fw-tag) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.35em 0.65em;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1.75cqi, 11px);
+    line-height: 1.3;
+    white-space: nowrap;
+    color: var(--color-fg);
+    background: rgb(17 19 22 / 0.9);
+    border: 1px solid var(--color-line-strong);
+    border-radius: 6px;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s,
+      color 0.2s;
+  }
+  .viewport :global(.fw-tag)::before {
+    content: '';
+    width: 0.55em;
+    height: 0.55em;
+    border-radius: 50%;
+    background: var(--tag-dot, var(--color-faint));
+  }
+  .viewport :global(.fw-tag.is-bad) {
+    --tag-dot: var(--color-danger);
+    color: var(--chip-bad-fg);
+    border-color: rgb(242 85 90 / 0.4);
+  }
+  .viewport :global(.fw-tag.is-mech) {
+    --tag-dot: #9fd0e8;
+  }
+  .viewport :global(.fw-tag.is-plumb) {
+    --tag-dot: #7aa5ff;
+  }
+  .viewport :global(.fw-tag.is-elec) {
+    --tag-dot: #f0c060;
+  }
+  .viewport :global(.fw-tag.is-struct) {
+    --tag-dot: #c9ced5;
+  }
+  .viewport :global(.fw-tag.is-opt) {
+    --tag-dot: var(--color-accent);
+    color: var(--chip-ok-fg);
+    border-color: rgb(46 196 174 / 0.4);
+    cursor: pointer;
+  }
+  .viewport :global(.fw-tag.is-opt.is-live) {
+    pointer-events: auto;
+  }
+  .viewport :global(.fw-tag.is-opt:hover) {
+    border-color: var(--color-accent);
+  }
+  .viewport :global(.fw-tag.is-opt.is-selected) {
+    --tag-dot: #0a0b0d;
+    color: #0a0b0d;
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* ---- option picker ---- */
+  .opt {
+    display: grid;
+    gap: 2px;
+    align-content: start;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--color-line-strong);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
+  }
+  .opt:hover {
+    border-color: rgb(46 196 174 / 0.5);
+  }
+  .opt[aria-pressed='true'] {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+  .opt:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .pane:not([hidden]) {
+    animation: pane-in 0.35s var(--ease-out-soft);
+  }
+  @keyframes pane-in {
+    from {
+      opacity: 0;
+      translate: 0 4px;
+    }
+  }
+
+  /* ---- data views: stacked in one cell; rows stagger in ---- */
+  .views {
+    display: grid;
+  }
+  .view {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.25s ease,
+      visibility 0s linear 0.25s;
+  }
+  .view[data-active] {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.3s ease 0.1s,
+      visibility 0s;
+  }
+  .st {
+    opacity: 0;
+    translate: 0 6px;
+    transition:
+      opacity 0.45s var(--ease-out-soft),
+      translate 0.45s var(--ease-out-soft);
+  }
+  .view[data-active] .st {
+    opacity: 1;
+    translate: 0 0;
+    transition-delay: calc(0.15s + var(--i, 0) * 0.07s);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .status:is(.is-bad, .is-warn, .is-ok) i {
+      animation: blink 1.2s ease-in-out infinite;
+    }
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0.35;
+    }
+  }
+</style>
+
+<script>
+  import { initWindow } from '../../scripts/feature-window';
+  document.querySelectorAll<HTMLElement>('[data-fw]').forEach(initWindow);
+</script>
